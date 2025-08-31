@@ -10,12 +10,12 @@ import { School } from "lucide-react";
 
 function Page() {
   return (
-    <div className="min-h-dvh p-10 max-w-4xl flex flex-col gap-6 mx-auto">
+    <div className="min-h-dvh sm:p-10 px-4 max-sm:py-6 max-w-4xl flex flex-col gap-6 mx-auto">
       <div className="space-y-2">
-        <h1 className="text-4xl tracking-tight font-bold">
+        <h1 className="sm:text-4xl text-3xl tracking-tight font-bold">
           Register your School
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-lg max-sm:text-sm font-medium">
           Join our platform and connect with students and parents looking for
           quality education
         </p>

@@ -14,7 +14,6 @@ import { schoolSchema } from "@/schema/schoolSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CardFooter } from "./ui/card";
 import {
   Select,
   SelectContent,
@@ -25,9 +24,12 @@ import {
 import { State, City } from "country-state-city";
 import { useState } from "react";
 import { Textarea } from "./ui/textarea";
+import { Loader2 } from "lucide-react";
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
 
 function SchoolForm() {
-  const [state, setState] = useState("");
+  const [loading, setLoading] = useState(false);
   const form = useForm({
     resolver: zodResolver(schoolSchema),
     defaultValues: {
@@ -37,18 +39,50 @@ function SchoolForm() {
       city: "",
       state: "",
       contact: "",
-      image: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof schoolSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof schoolSchema>) {
+    if (loading) return;
+    try {
+      setLoading(true);
+      const state =
+        State.getStateByCodeAndCountry(values.state, "IN")?.name ||
+        values.state;
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+      formData.append("address", values.address);
+      formData.append("city", values.city);
+      formData.append("state", state);
+      formData.append("contact", values.contact);
+      if (values.image) formData.append("image", values.image);
+
+      const { data } = await axios.post("/api/add", formData);
+      if (data.success) {
+        form.reset();
+        toast.success("School added successfully");
+      }
+    } catch (error) {
+      console.error(error);
+      let message = error instanceof Error ? error.message : String(error);
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      }
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-        <div className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) =>
+          console.trace(errors)
+        )}
+      >
+        <div className="space-y-6">
           <FormField
             control={form.control}
             name="name"
@@ -62,7 +96,7 @@ function SchoolForm() {
               </FormItem>
             )}
           />
-          <div className="flex gap-2">
+          <div className="grid sm:grid-cols-2 sm:gap-2 gap-6">
             <FormField
               control={form.control}
               name="email"
@@ -83,10 +117,7 @@ function SchoolForm() {
                 <FormItem className="w-full">
                   <FormLabel>Contact</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Contact number of your school"
-                      {...field}
-                    />
+                    <Input placeholder="Contact number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +137,7 @@ function SchoolForm() {
               </FormItem>
             )}
           />
-          <div className="flex gap-2">
+          <div className="grid sm:grid-cols-2 sm:gap-2 gap-6">
             <FormField
               control={form.control}
               name="state"
@@ -114,20 +145,16 @@ function SchoolForm() {
                 <FormItem className="w-full">
                   <FormLabel htmlFor="state">State</FormLabel>
                   <FormControl>
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setState(value);
-                      }}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger id="state" className="w-full">
                         <SelectValue placeholder="Select state" />
                       </SelectTrigger>
                       <SelectContent>
-                        {State.getStatesOfCountry("IN").map((city, index) => (
-                          <SelectItem value={city.name} key={index}>{city.name}</SelectItem>
-                        ))} 
+                        {State.getStatesOfCountry("IN").map((state, index) => (
+                          <SelectItem value={state.isoCode} key={index}>
+                            {state.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -147,12 +174,15 @@ function SchoolForm() {
                         <SelectValue placeholder="Select city" />
                       </SelectTrigger>
                       <SelectContent>
-                        {City.getCitiesOfState("IN", state).length > 0 ? (
-                          City.getCitiesOfState("IN", state).map((city, index) => (
-                            <SelectItem value={city.name} key={index}>
-                              {city.name}
-                            </SelectItem>
-                          ))
+                        {City.getCitiesOfState("IN", form.watch("state"))
+                          .length > 0 ? (
+                          City.getCitiesOfState("IN", form.watch("state")).map(
+                            (city, index) => (
+                              <SelectItem value={city.name} key={index}>
+                                {city.name}
+                              </SelectItem>
+                            )
+                          )
                         ) : (
                           <SelectItem value="N/A" disabled>
                             Select state first
@@ -171,23 +201,35 @@ function SchoolForm() {
             name="image"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Image</FormLabel>
+                <FormLabel className="gap-1">
+                  Image
+                  <span className="text-xs text-muted-foreground">
+                    (Optional)
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="file"
                     placeholder="Name of your school"
-                    {...field}
+                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                    accept="image/png,image/jpg,image/jpeg"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <CardFooter className="p-0">
-            <Button type="submit" className="w-full">
-              Register
-            </Button>
-          </CardFooter>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 size="24" className="animate-spin" />
+            ) : (
+              "Register"
+            )}
+          </Button>
         </div>
       </form>
     </Form>

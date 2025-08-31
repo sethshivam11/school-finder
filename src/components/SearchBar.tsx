@@ -21,33 +21,63 @@ function Searchbar({
   setSchools: (schools: School[]) => void;
 }) {
   const [query, setQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState("all");
+
+  const handleSearch = () => {
+    setSchools(
+      schools.filter((school) =>
+        school.name.toLowerCase().includes(query.trim().toLowerCase())
+      )
+    );
+  };
 
   return (
-    <div className="grid grid-cols-10 justify-between gap-2">
-      <div className="flex gap-2 col-span-6">
+    <div className="grid sm:grid-cols-4 gap-2">
+      <div className="flex gap-2 sm:col-span-3">
         <Input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setQuery(value);
+            if (value === "") setSchools(schools);
+            else {
+              setSchools(
+                schools.filter((school) =>
+                  school.name.toLowerCase().includes(value.trim().toLowerCase())
+                )
+              );
+            }
+          }}
           placeholder="Search schools"
         />
-        <Button>
+        <Button variant="secondary" onClick={handleSearch}>
           <Search size="24" /> Search
         </Button>
       </div>
-      <Select>
-        <SelectTrigger id="state" className="w-full col-span-2 hidden">
+
+      <Select
+        value={selectedCity}
+        onValueChange={(value) => {
+          if (value === "all") {
+            setSchools(schools);
+          } else {
+            setSchools(schools.filter((school) => school.city === value));
+          }
+          setSelectedCity(value);
+        }}
+      >
+        <SelectTrigger id="state" className="w-full">
           <SelectValue placeholder="Select city" />
         </SelectTrigger>
         <SelectContent>
-          {
-            new Set(
-              schools.map((school, index) => (
-                <SelectItem value={school.city} className="capitalize" key={index}>
-                  {school.city}
-                </SelectItem>
-              ))
+          <SelectItem value="all">All Cities</SelectItem>
+          {[...new Set(schools.map((school) => school.city))].map(
+            (city, index) => (
+              <SelectItem value={city} key={index} className="capitalize">
+                {city}
+              </SelectItem>
             )
-          }
+          )}
         </SelectContent>
       </Select>
     </div>

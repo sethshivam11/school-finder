@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Menu } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetTitle,
   SheetTrigger,
@@ -13,7 +14,7 @@ import {
 
 function Navbar() {
   return (
-    <div className="sticky top-0 left-0 w-full bg-white/50 dark:bg-black/50 backdrop-blur py-2 sm:px-6 px-2 flex items-center justify-between border-b border-input">
+    <div className="sticky top-0 left-0 w-full bg-white/50 dark:bg-black/50 z-50 backdrop-blur sm:py-2 py-0.5 sm:px-6 px-2 flex items-center justify-between border-b border-input">
       <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
         <Sheet>
           <SheetTrigger asChild>
@@ -24,22 +25,26 @@ function Navbar() {
           <SheetContent side="left" className="w-64">
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <div className="flex items-center flex-col p-2">
-              <Button
-                size="lg"
-                variant="ghost"
-                asChild
-                className="w-full justify-start"
-              >
-                <Link href="/">Home</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="ghost"
-                asChild
-                className="w-full justify-start"
-              >
-                <Link href="add-school">Add School</Link>
-              </Button>
+              <SheetClose asChild>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/">Home</Link>
+                </Button>
+              </SheetClose>
+              <SheetClose asChild>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="add-school">Add School</Link>
+                </Button>
+              </SheetClose>
             </div>
           </SheetContent>
         </Sheet>
