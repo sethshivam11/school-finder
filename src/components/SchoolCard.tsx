@@ -10,7 +10,7 @@ function SchoolCard({ school }: { school: School }) {
     <div className="flex flex-col justify-between gap-3 sm:rounded-xl rounded-lg bg-card border-card">
       <div className="sm:rounded-t-xl rounded-t-lg overflow-hidden relative">
         <Image
-          src={school.image}
+          src={school.image || "/logo.svg"}
           alt={school.name}
           width="400"
           height="400"
