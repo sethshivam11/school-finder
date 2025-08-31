@@ -1,7 +1,6 @@
 import connectDB from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import { writeFile } from "fs/promises";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
   const db = await connectDB();
@@ -14,7 +13,7 @@ export async function POST(req: NextRequest) {
     const city = formData.get("city")?.toString().trim();
     const state = formData.get("state")?.toString().trim();
     const contact = formData.get("contact")?.toString().trim();
-    const image = formData.get("image") as unknown as File;
+    const file = formData.get("image") as unknown as File;
 
     if (!name || !email || !address || !city || !state || !contact) {
       return NextResponse.json(
@@ -26,20 +25,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let imagePath: string | null = null;
-    if (image) {
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const fileName = `${Date.now()}-${image.name}`;
-      const filePath = path.join(
-        process.cwd(),
-        "public/schoolImages",
-        fileName
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please upload a file smaller than 50MB",
+        },
+        { status: 400 }
       );
-      await writeFile(filePath, buffer);
+    }
 
-      imagePath = `/schoolImages/${fileName}`;
+    let imagePath: string | null = null;
+    if (file && file.size > 0) {
+      const fileBuffer = await file.arrayBuffer();
+
+      const mimeType = file.type;
+      const encoding = "base64";
+      const base64Data = Buffer.from(fileBuffer).toString("base64");
+
+      const fileUri = "data:" + mimeType + ";" + encoding + "," + base64Data;
+
+      const upload = await uploadToCloudinary(fileUri);
+      imagePath = upload?.secure_url || null;
     }
 
     const [result] = await db.execute(
