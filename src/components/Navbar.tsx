@@ -69,16 +69,18 @@ function Navbar() {
                   </Button>
                 </SheetClose>
               ))}
-              <SheetClose asChild>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="w-full justify-start text-destructive hover:text-red-500 hover:bg-red-100 hover:dark:bg-red-950"
-                  onClick={() => signOut()}
-                >
-                  Logout
-                </Button>
-              </SheetClose>
+              {status === "authenticated" && (
+                <SheetClose asChild>
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="w-full justify-start text-destructive hover:text-red-500 hover:bg-red-100 hover:dark:bg-red-950"
+                    onClick={() => signOut()}
+                  >
+                    Logout
+                  </Button>
+                </SheetClose>
+              )}
             </div>
           </SheetContent>
         </Sheet>
