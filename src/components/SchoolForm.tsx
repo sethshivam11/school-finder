@@ -25,8 +25,9 @@ import { State, City } from "country-state-city";
 import { useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { Loader2 } from "lucide-react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from "sonner";
+import { handleError } from "@/lib/helpers";
 
 function SchoolForm() {
   const [loading, setLoading] = useState(false);
@@ -64,11 +65,7 @@ function SchoolForm() {
         toast.success("School added successfully");
       }
     } catch (error) {
-      console.error(error);
-      let message = error instanceof Error ? error.message : String(error);
-      if (error instanceof AxiosError) {
-        message = error.response?.data?.message || message;
-      }
+      const message = handleError(error);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -77,11 +74,7 @@ function SchoolForm() {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit, (errors) =>
-          console.trace(errors)
-        )}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-6">
           <FormField
             control={form.control}
@@ -219,11 +212,7 @@ function SchoolForm() {
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <Loader2 size="24" className="animate-spin" />
             ) : (

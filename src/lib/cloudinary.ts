@@ -19,3 +19,19 @@ export const uploadToCloudinary = async (fileUri: string) => {
     console.log("Error occured while uploading to cloudinary\n", err);
   }
 };
+
+export const deleteFromCloudinary = async (cloudFileLink: string) => {
+  try {
+    if (!cloudFileLink) return null;
+
+    const idx = cloudFileLink.indexOf("lastminprep");
+    const publicId = cloudFileLink.slice(idx).split(".")[0];
+
+    const response = await cloudinary.uploader.destroy(publicId);
+
+    if (response?.result === "ok") return true;
+  } catch (err) {
+    console.log("Error occured while deleting from cloudinary\n", err);
+    return false;
+  }
+};

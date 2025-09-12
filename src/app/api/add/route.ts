@@ -1,9 +1,22 @@
 import connectDB from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function POST(req: NextRequest) {
   const db = await connectDB();
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
+  if (!session || !user) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unauthorized",
+      },
+      { status: 401 }
+    );
+  }
 
   try {
     const formData = await req.formData();
@@ -25,18 +38,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Please upload a file smaller than 50MB",
-        },
-        { status: 400 }
-      );
-    }
-
     let imagePath: string | null = null;
     if (file && file.size > 0) {
+      if (file.size > 50 * 1024 * 1024) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Please upload a file smaller than 50MB",
+          },
+          { status: 400 }
+        );
+      }
+
       const fileBuffer = await file.arrayBuffer();
 
       const mimeType = file.type;
@@ -51,9 +64,9 @@ export async function POST(req: NextRequest) {
 
     const [result] = await db.execute(
       `
-      INSERT INTO schools (email_id, name, address, city, state, contact, image)  VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO schools (email_id, name, address, city, state, contact, image, creator)  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `,
-      [email, name, address, city, state, contact, imagePath]
+      [email, name, address, city, state, contact, imagePath, user.id]
     );
 
     if (!result) {
@@ -69,7 +82,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        data: result,
         message: "School added successfully",
       },
       { status: 201 }

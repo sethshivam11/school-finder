@@ -16,9 +16,11 @@ import {
 function Searchbar({
   schools,
   setSchools,
+  hideSelect = false,
 }: {
   schools: School[];
   setSchools: (schools: School[]) => void;
+  hideSelect?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("all");
@@ -55,31 +57,33 @@ function Searchbar({
         </Button>
       </div>
 
-      <Select
-        value={selectedCity}
-        onValueChange={(value) => {
-          if (value === "all") {
-            setSchools(schools);
-          } else {
-            setSchools(schools.filter((school) => school.city === value));
-          }
-          setSelectedCity(value);
-        }}
-      >
-        <SelectTrigger id="state" className="w-full">
-          <SelectValue placeholder="Select city" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Cities</SelectItem>
-          {[...new Set(schools.map((school) => school.city))].map(
-            (city, index) => (
-              <SelectItem value={city} key={index} className="capitalize">
-                {city}
-              </SelectItem>
-            )
-          )}
-        </SelectContent>
-      </Select>
+      {!hideSelect && (
+        <Select
+          value={selectedCity}
+          onValueChange={(value) => {
+            if (value === "all") {
+              setSchools(schools);
+            } else {
+              setSchools(schools.filter((school) => school.city === value));
+            }
+            setSelectedCity(value);
+          }}
+        >
+          <SelectTrigger id="state" className="w-full">
+            <SelectValue placeholder="Select city" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Cities</SelectItem>
+            {[...new Set(schools.map((school) => school.city))].map(
+              (city, index) => (
+                <SelectItem value={city} key={index} className="capitalize">
+                  {city}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }

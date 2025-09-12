@@ -1,11 +1,18 @@
 import { School } from "@/app/page";
-import { MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, PhoneIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import { Button } from "./ui/button";
 import Link from "next/link";
 
-function SchoolCard({ school }: { school: School }) {
+function SchoolCard({
+  school,
+  footer = null,
+  show = [],
+}: {
+  school: School;
+  footer?: React.ReactNode;
+  show?: ("address" | "contact" | "email_id")[];
+}) {
   return (
     <div className="flex flex-col justify-between gap-3 sm:rounded-xl rounded-lg bg-card border-card">
       <div className="sm:rounded-t-xl rounded-t-lg overflow-hidden relative">
@@ -25,24 +32,43 @@ function SchoolCard({ school }: { school: School }) {
           >
             {school.name}
           </h1>
-          <div className="flex gap-1 items-center">
-            <MapPin size="16" className="shrink-0" />
-            <p
-              className="text-muted-foreground text-sm truncate"
-              title={`${school.address}, ${school.city}`}
-            >
-              {school.address}, {school.city}
-            </p>
-          </div>
+          {show.includes("address") && (
+            <div className="flex gap-1 items-center">
+              <MapPin size="16" className="shrink-0" />
+              <p
+                className="text-muted-foreground text-sm truncate"
+                title={`${school.address}, ${school.city}`}
+              >
+                {school.address}, {school.city}
+              </p>
+            </div>
+          )}
+          {show.includes("email_id") && (
+            <div className="flex gap-1 items-center">
+              <Mail size="16" className="shrink-0" />
+              <Link
+                href={`mailto:${school.email_id}`}
+                className="text-muted-foreground text-sm truncate hover:underline"
+                title={school.email_id}
+              >
+                {school.email_id}
+              </Link>
+            </div>
+          )}
+          {show.includes("contact") && (
+            <div className="flex gap-1 items-center">
+              <PhoneIcon size="16" className="shrink-0" />
+              <Link
+                href={`tel:${school.contact}`}
+                className="text-muted-foreground text-sm truncate hover:underline"
+                title={school.contact}
+              >
+                {school.contact}
+              </Link>
+            </div>
+          )}
         </div>
-        <Button className="w-full" asChild>
-          <Link
-            href={`tel:${school.contact}`}
-            className="w-full max-sm:text-sm"
-          >
-            <Phone /> Call Now
-          </Link>
-        </Button>
+        {footer}
       </div>
     </div>
   );

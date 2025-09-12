@@ -1,21 +1,26 @@
 "use client";
 
-import SchoolCard from "@/components/SchoolCard";
 import SchoolSkeleton from "@/components/SchoolSkeleton";
 import SearchBar from "@/components/SearchBar";
-import axios, { AxiosError } from "axios";
-import { History } from "lucide-react";
+import axios from "axios";
+import { History, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import React from "react";
+import SchoolCard from "@/components/SchoolCard";
+import { Button } from "@/components/ui/button";
+import { handleError } from "@/lib/helpers";
 
 export interface School {
+  id: number;
   name: string;
-  image: string;
-  email: string;
+  image: string | null;
+  email_id: string;
   address: string;
   city: string;
   state: string;
   contact: string;
+  creator: number | null;
 }
 
 export default function Home() {
@@ -32,12 +37,10 @@ export default function Home() {
         setFilteredSchools(data.data);
       }
     } catch (error) {
-      console.error(error);
-      let message = error instanceof Error ? error.message : String(error);
-      if (error instanceof AxiosError) {
-        message = error.response?.data?.message || message;
+      const message = handleError(error);
+      if (message !== "No schools were found") {
+        toast.error(message);
       }
-      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -67,11 +70,20 @@ export default function Home() {
           ))
         ) : filteredSchools.length > 0 ? (
           filteredSchools.map((school, index) => (
-            <SchoolCard school={school} key={index} />
+            <SchoolCard
+              school={school}
+              key={index}
+              show={["address"]}
+              footer={
+                <Button className="w-full">
+                  <Phone /> Call Now
+                </Button>
+              }
+            />
           ))
         ) : (
-          <div className="lg:col-span-4 sm:col-span-3 flex flex-col items-center justify-center h-full gap-2">
-            <History size="40" />
+          <div className="lg:col-span-4 sm:col-span-3 col-span-2 flex flex-col items-center justify-center h-full gap-2">
+            <History size="60" />
             <h1 className="text-xl font-semibold tracking-tight">
               No Schools found
             </h1>
